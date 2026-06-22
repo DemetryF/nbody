@@ -30,27 +30,15 @@ async fn main() {
         pos: Vec2::new(0., 0.),
         vel: Vec2::new(0., 0.),
         mass: 500000.,
-        max_radius: 150.,
-        objects_count: 10000,
-        min_radius: 50.,
-        sleeves: 2,
-        curvature_angle: 11. * PI / 4.,
-    });
-
-    let mut galaxy2 = spiral_galaxy(SpiralGalaxy {
-        pos: Vec2::new(200., 0.),
-        vel: Vec2::new(0., -43.),
-        mass: 30000.,
-        max_radius: 90.,
-        objects_count: 3000,
-        min_radius: 20.,
-        sleeves: 2,
+        max_radius: 300.,
+        objects_count: 20000,
+        min_radius: 100.,
+        sleeves: 6,
         curvature_angle: 3. * PI / 4.,
     });
 
     let mut objects = Vec::new();
     objects.append(&mut galaxy1);
-    objects.append(&mut galaxy2);
 
     let mut state = State::new(objects, params);
 
