@@ -10,7 +10,6 @@ pub struct SpiralGalaxy {
     pub mass: f32,
     pub min_radius: f32,
     pub max_radius: f32,
-    pub period: f32,
     pub sleeves: usize,
     pub curvature_angle: f32,
     pub objects_count: usize,
@@ -19,40 +18,45 @@ pub struct SpiralGalaxy {
 pub fn spiral_galaxy(galaxy: SpiralGalaxy) -> Vec<Object> {
     let curvature = galaxy.curvature_angle.powf(-1.) * (galaxy.max_radius / galaxy.min_radius).ln();
 
+    let eccentrity = 0.6;
+
     (0..galaxy.objects_count)
         .map(|_| {
-            let radius = rand::gen_range(
-                galaxy.min_radius * galaxy.max_radius,
-                galaxy.max_radius.powi(2),
-            ) / galaxy.max_radius;
-
             let sleeve = rand::gen_range(0, galaxy.sleeves);
 
-            let angle = curvature.powf(-1.) * (radius / galaxy.min_radius).ln()
-                + sleeve as f32 * (2. * PI) / galaxy.sleeves as f32
-                + PI / rand::gen_range(3f32, 4.);
+            let radius = galaxy.min_radius
+                + (rand::gen_range::<f32>(0., 1.) * rand::gen_range::<f32>(0., 1.)).powf(2.)
+                    * (galaxy.max_radius - galaxy.min_radius);
 
-            let mass = rand::gen_range(0.01, 1f32).powf(10.);
+            let angle = {
+                let mn_hf_ax = radius * f32::sqrt((1. - eccentrity) / (1. + eccentrity));
+                let peri = radius * (1. - eccentrity);
+
+                let spiral_point_radius = f32::sqrt(mn_hf_ax * mn_hf_ax + peri * peri / 4.);
+
+                let spiral_point_angle = curvature.powf(-1.)
+                    * (spiral_point_radius / galaxy.min_radius).ln()
+                    + sleeve as f32 * (2. * PI) / galaxy.sleeves as f32;
+
+                let shift = f32::atan2(2. * mn_hf_ax, peri);
+
+                spiral_point_angle + shift + PI / rand::gen_range(4f32, 5.)
+            };
 
             let u = Vec2::from_angle(angle);
             let pos = galaxy.pos + -u * radius;
 
-            let speed = {
-                (galaxy.mass
-                    * (2.0 / radius - ((2.0 * PI / galaxy.period).powi(1) / galaxy.mass).cbrt()))
-                .sqrt()
-            };
-
-            let local_vel =
-                -u.rotate(Vec2::new(0., 1.)) * speed * (1. + rand::gen_range(-0.005, 0.005));
-
+            let speed = f32::sqrt(galaxy.mass * (2. / radius - (1. + eccentrity) / radius));
+            let local_vel = -u.rotate(Vec2::new(0., 1.)) * speed;
             let vel = galaxy.vel + local_vel;
+
+            let mass = rand::gen_range(0.01, 1f32).powf(10.) * 0.01;
 
             Object {
                 pos,
                 vel,
                 mass,
-                radius: 0.5,
+                radius: 0.7,
                 ..Default::default()
             }
         })

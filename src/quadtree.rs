@@ -134,14 +134,3 @@ pub fn to_local_idx(vec: Vec2) -> usize {
         _ => unreachable!("{vec}"),
     }
 }
-
-// pub fn from_local_idx(idx: usize) -> Vec2 {
-//     match idx {
-//         0 => Vec2::new(-1., 1.),
-//         1 => Vec2::new(1., 1.),
-//         2 => Vec2::new(1., -1.),
-//         3 => Vec2::new(-1., -1.),
-
-//         _ => unreachable!(),
-//     }
-// }

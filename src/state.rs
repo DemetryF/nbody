@@ -4,6 +4,7 @@ use {
         quadtree::{Node, NodeKind, Tree, TreeParams, to_local_idx},
     },
     macroquad::prelude::*,
+    std::thread,
 };
 
 pub struct State {
@@ -19,17 +20,23 @@ impl State {
     pub fn update(&mut self, delta_time: f32, theta: f32) {
         let tree = Tree::new(self.params).build(&self.objects);
 
-        for obj in &mut self.objects {
-            // todo doesnt belong in any case
-            let force = calculate_force(*obj, &tree.root, tree.params, theta, true);
+        thread::scope(|scope| {
+            let tree = &tree;
 
-            obj.acc = force / obj.mass;
-        }
+            let chunk_size = self.objects.len() / 24;
 
-        for obj in &mut self.objects {
-            obj.vel += obj.acc * delta_time;
-            obj.pos += obj.vel * delta_time;
-        }
+            for chunk in self.objects.chunks_mut(chunk_size) {
+                scope.spawn(move || {
+                    for obj in chunk.iter_mut() {
+                        let force = calculate_force(*obj, &tree.root, tree.params, theta, true);
+
+                        obj.acc = force / obj.mass;
+                        obj.vel += obj.acc * delta_time;
+                        obj.pos += obj.vel * delta_time;
+                    }
+                });
+            }
+        })
     }
 }
 
