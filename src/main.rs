@@ -13,8 +13,9 @@ use {
     std::{f32::consts::PI, time::Instant},
 };
 
-const SPEED: f32 = 2.;
-const THETA: f32 = 0.8;
+const SPEED: f32 = 4.;
+const THETA: f32 = 1.;
+const MAX_DELTA_TIME: f32 = 0.5;
 
 #[macroquad::main("Barnes-Hut")]
 async fn main() {
@@ -33,14 +34,15 @@ async fn main() {
         max_radius: 300.,
         objects_count: 20000,
         min_radius: 100.,
-        sleeves: 6,
-        curvature_angle: 3. * PI / 4.,
+        sleeves: 2,
+        curvature_angle: 5. * PI / 4.,
     });
 
     let mut objects = Vec::new();
     objects.append(&mut galaxy1);
 
     let mut state = State::new(objects, params);
+    state.init(THETA);
 
     let mut delta_time: f32 = 0.;
 
@@ -50,13 +52,13 @@ async fn main() {
         clear_background(BLACK);
         draw_fps();
 
-        state.update(SPEED * delta_time.min(0.02f32), THETA);
+        state.update((SPEED * delta_time).min(MAX_DELTA_TIME), THETA);
 
         for obj in &state.objects {
             draw_circle(
                 screen_width() / 2. + obj.pos.x,
                 screen_height() / 2. + obj.pos.y,
-                obj.radius,
+                obj.radius as f32,
                 Color::from_rgba(255, 255, 255, 255),
             );
         }

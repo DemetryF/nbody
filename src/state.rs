@@ -7,6 +7,8 @@ use {
     std::thread,
 };
 
+const THREADS: usize = 18;
+
 pub struct State {
     pub objects: Vec<Object>,
     params: TreeParams,
@@ -17,26 +19,47 @@ impl State {
         Self { objects, params }
     }
 
+    pub fn init(&mut self, theta: f32) {
+        let tree = Tree::new(self.params).build(&self.objects);
+
+        thread::scope(|scope| {
+            let tree = &tree;
+
+            let chunk_size = self.objects.len() / THREADS;
+
+            for chunk in self.objects.chunks_mut(chunk_size) {
+                scope.spawn(move || {
+                    for obj in chunk.iter_mut() {
+                        let force = calculate_force(*obj, &tree.root, tree.params, theta, true);
+                        obj.acc_next = force / obj.mass;
+                    }
+                });
+            }
+        })
+    }
+
     pub fn update(&mut self, delta_time: f32, theta: f32) {
         let tree = Tree::new(self.params).build(&self.objects);
 
         thread::scope(|scope| {
             let tree = &tree;
 
-            let chunk_size = self.objects.len() / 24;
+            let chunk_size = self.objects.len() / THREADS;
 
             for chunk in self.objects.chunks_mut(chunk_size) {
                 scope.spawn(move || {
                     for obj in chunk.iter_mut() {
                         let force = calculate_force(*obj, &tree.root, tree.params, theta, true);
 
-                        obj.acc = force / obj.mass;
-                        obj.vel += obj.acc * delta_time;
-                        obj.pos += obj.vel * delta_time;
+                        obj.acc_next = force / obj.mass;
+
+                        obj.vel += 0.5 * delta_time * (obj.acc + obj.acc_next);
+                        obj.acc = obj.acc_next;
+                        obj.pos += obj.vel * delta_time + obj.acc * delta_time * delta_time * 0.5;
                     }
                 });
             }
-        })
+        });
     }
 }
 
