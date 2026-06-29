@@ -30,7 +30,7 @@ async fn main() {
     };
 
     let mut galaxy1 = SpiralGalaxy {
-        pos: Vec2::new(-200., 0.),
+        pos: Vec2::new(-170., 0.),
         vel: Vec2::new(0., 0.),
         mass: 500000.,
         max_radius: 130.,
@@ -40,7 +40,7 @@ async fn main() {
         curvature_angle: 5. * PI / 4.,
     };
     let mut galaxy2 = SpiralGalaxy {
-        pos: Vec2::new(200., 0.),
+        pos: Vec2::new(170., 0.),
         vel: Vec2::new(0., 0.),
         mass: 500000.,
         max_radius: 130.,
