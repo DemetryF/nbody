@@ -15,7 +15,7 @@ use {
     std::{f32::consts::PI, time::Instant},
 };
 
-const SPEED: f32 = 4.;
+const SPEED: f32 = 1.;
 const THETA: f32 = 1.;
 const MAX_DELTA_TIME: f32 = 0.4;
 
@@ -30,29 +30,27 @@ async fn main() {
     };
 
     let mut galaxy1 = SpiralGalaxy {
-        pos: Vec2::new(0., 0.),
+        pos: Vec2::new(-200., 0.),
         vel: Vec2::new(0., 0.),
         mass: 500000.,
-        max_radius: 200.,
+        max_radius: 130.,
         objects_count: 10000,
-        min_radius: 100.,
+        min_radius: 40.,
         sleeves: 4,
         curvature_angle: 5. * PI / 4.,
     };
     let mut galaxy2 = SpiralGalaxy {
-        pos: Vec2::new(400., 0.),
+        pos: Vec2::new(200., 0.),
         vel: Vec2::new(0., 0.),
-        mass: 40000.,
-        max_radius: 90.,
+        mass: 500000.,
+        max_radius: 130.,
         objects_count: 10000,
-        min_radius: 20.,
+        min_radius: 40.,
         sleeves: 2,
         curvature_angle: 5. * PI / 4.,
     };
 
     make_orbit_each_other(&mut galaxy1, &mut galaxy2);
-
-    println!("{} {}", galaxy1.vel.length(), galaxy2.vel.length());
 
     let mut objects = Vec::new();
     objects.append(&mut spiral_galaxy(galaxy1));
