@@ -18,9 +18,9 @@ pub struct SpiralGalaxy {
 pub fn spiral_galaxy(galaxy: SpiralGalaxy) -> Vec<Object> {
     let curvature = galaxy.curvature_angle.powf(-1.) * (galaxy.max_radius / galaxy.min_radius).ln();
 
-    let eccentrity = 0.3;
+    let eccentricity = 0.4;
 
-    (0..galaxy.objects_count)
+    (1..galaxy.objects_count)
         .map(|_| {
             let sleeve = rand::gen_range(0, galaxy.sleeves);
 
@@ -28,10 +28,11 @@ pub fn spiral_galaxy(galaxy: SpiralGalaxy) -> Vec<Object> {
                 + rand::gen_range::<f32>(0., 1.).powf(0.5)
                     * (galaxy.max_radius - galaxy.min_radius);
 
-            let angle = {
-                let mn_hf_ax = radius * f32::sqrt((1. - eccentrity) / (1. + eccentrity));
-                let peri = radius * (1. - eccentrity);
+            let mn_hf_ax = radius * f32::sqrt((1. - eccentricity) / (1. + eccentricity));
+            let peri = radius * (1. - eccentricity * eccentricity);
+            let focal = mn_hf_ax * (1. - eccentricity * eccentricity).sqrt();
 
+            let ellipse_angle = {
                 let spiral_point_radius = f32::sqrt(mn_hf_ax * mn_hf_ax + peri * peri / 4.);
 
                 let spiral_point_angle = curvature.powf(-1.)
@@ -40,14 +41,26 @@ pub fn spiral_galaxy(galaxy: SpiralGalaxy) -> Vec<Object> {
 
                 let shift = f32::atan2(2. * mn_hf_ax, peri);
 
-                spiral_point_angle + shift + PI / rand::gen_range::<f32>(5., 7.)
+                spiral_point_angle + shift //+ PI / rand::gen_range::<f32>(5., 7.)
             };
 
-            let u = Vec2::from_angle(angle);
-            let pos = galaxy.pos + -u * radius;
+            let angle = rand::gen_range(0., 2. * PI);
 
-            let speed = f32::sqrt(galaxy.mass * (2. / radius - (1. + eccentrity) / radius));
-            let local_vel = u.rotate(Vec2::new(0., 1.)) * speed;
+            let r = focal / (1.0 + eccentricity * angle.cos());
+
+            let periapsis = Vec2::from_angle(ellipse_angle);
+            let transversal = -periapsis.rotate(Vec2::Y);
+
+            let radial = periapsis * angle.cos() + transversal * angle.sin();
+            let tangential = -periapsis * angle.sin() + transversal * angle.cos();
+
+            let local_pos = radial * r;
+            let pos = galaxy.pos + local_pos;
+
+            let local_vel = (galaxy.mass / focal).sqrt()
+                * (eccentricity * angle.sin() * radial
+                    + (1.0 + eccentricity * angle.cos()) * tangential);
+
             let vel = galaxy.vel + local_vel;
 
             let mass = rand::gen_range(0.1, 1f32).powf(10.) * 0.01;
