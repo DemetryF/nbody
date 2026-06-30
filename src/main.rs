@@ -11,11 +11,10 @@ use {
         app::App,
         galaxy::{SpiralGalaxy, spiral_galaxy},
         quadtree::TreeParams,
-        state::State,
         tools::make_orbit_each_other,
     },
     macroquad::{miniquad::window::set_window_size, prelude::*},
-    std::{f32::consts::PI, time::Instant},
+    std::f32::consts::PI,
 };
 
 const SPEED: f32 = 1.;
