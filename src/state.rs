@@ -83,10 +83,9 @@ fn calculate_force(
     };
 
     let theta = {
-        let size = params.sector_size_at_depth(node.depth).max_element();
         let dist = (mass_center - obj.pos).length();
 
-        size / dist
+        node.area() / dist / dist
     };
 
     if theta < theta_threshold && node.mass != obj.mass {

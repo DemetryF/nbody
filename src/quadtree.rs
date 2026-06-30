@@ -13,10 +13,7 @@ impl Tree {
     pub fn new(params: TreeParams) -> Self {
         let root = Node {
             center: params.center,
-            depth: 0,
-            mass: 0.,
-            mass_x_pos: Vec2::default(),
-            kind: NodeKind::Leaf(Leaf::default()),
+            ..Default::default()
         };
 
         Self { root, params }
@@ -49,7 +46,23 @@ pub struct Node {
     pub depth: i32,
     pub mass: f32,
     pub mass_x_pos: Vec2,
+    pub min: Vec2,
+    pub max: Vec2,
     pub kind: NodeKind,
+}
+
+impl Default for Node {
+    fn default() -> Self {
+        Self {
+            center: Default::default(),
+            depth: Default::default(),
+            mass: Default::default(),
+            mass_x_pos: Default::default(),
+            min: Vec2::splat(f32::INFINITY),
+            max: Vec2::splat(-f32::INFINITY),
+            kind: Default::default(),
+        }
+    }
 }
 
 impl Node {
@@ -57,9 +70,24 @@ impl Node {
         self.mass_x_pos / self.mass
     }
 
+    pub fn area(&self) -> f32 {
+        self.width() * self.height()
+    }
+
+    pub fn width(&self) -> f32 {
+        (self.max.x - self.min.x).abs()
+    }
+
+    pub fn height(&self) -> f32 {
+        (self.max.y - self.min.y).abs()
+    }
+
     pub fn push(&mut self, obj: Object, params: TreeParams) {
         self.mass += obj.mass;
         self.mass_x_pos += obj.mass * obj.pos;
+
+        self.max = self.max.max(obj.pos);
+        self.min = self.min.min(obj.pos);
 
         let local_pos = obj.pos - self.center;
         let local_idx = to_local_idx(local_pos);
@@ -95,9 +123,7 @@ impl Node {
                     Box::new(Node {
                         center,
                         depth,
-                        mass: 0.,
-                        mass_x_pos: Vec2::default(),
-                        kind: NodeKind::Leaf(Leaf::default()),
+                        ..Default::default()
                     })
                 });
 
@@ -110,6 +136,12 @@ impl Node {
 pub enum NodeKind {
     Branch(Branch),
     Leaf(Leaf),
+}
+
+impl Default for NodeKind {
+    fn default() -> Self {
+        Self::Leaf(Default::default())
+    }
 }
 
 #[derive(Default)]
