@@ -59,9 +59,14 @@ impl App {
 
     fn handle_events(&mut self) {
         self.handle_movement();
+        self.handle_change_speed();
     }
 
     fn handle_movement(&mut self) {
+        if is_key_down(KeyCode::LeftShift) {
+            return;
+        }
+
         if is_key_down(KeyCode::Up) {
             self.center.y += 200. * self.delta_time;
         }
@@ -76,6 +81,20 @@ impl App {
 
         if is_key_down(KeyCode::Right) {
             self.center.x -= 200. * self.delta_time;
+        }
+    }
+
+    fn handle_change_speed(&mut self) {
+        if !is_key_down(KeyCode::LeftShift) {
+            return;
+        }
+
+        if is_key_down(KeyCode::Left) {
+            self.speed /= 1.1;
+        }
+
+        if is_key_down(KeyCode::Right) {
+            self.speed *= 1.1;
         }
     }
 
