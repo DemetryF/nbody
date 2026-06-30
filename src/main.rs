@@ -61,9 +61,12 @@ async fn main() {
     state.init(THETA);
 
     let mut delta_time: f32 = 0.;
+    let mut center = Vec2::default();
 
     loop {
         let frame_start = Instant::now();
+
+        handle_arrows(&mut center, delta_time);
 
         clear_background(BLACK);
         draw_fps();
@@ -72,8 +75,8 @@ async fn main() {
 
         for obj in &state.objects {
             draw_circle(
-                screen_width() / 2. + obj.pos.x,
-                screen_height() / 2. + obj.pos.y,
+                screen_width() / 2. + center.x + obj.pos.x,
+                screen_height() / 2. + center.y + obj.pos.y,
                 obj.radius as f32,
                 Color::from_rgba(255, 255, 255, 255),
             );
@@ -82,5 +85,23 @@ async fn main() {
         next_frame().await;
 
         delta_time = frame_start.elapsed().as_secs_f32();
+    }
+}
+
+fn handle_arrows(center: &mut Vec2, dt: f32) {
+    if is_key_down(KeyCode::Up) {
+        center.y += 200. * dt;
+    }
+
+    if is_key_down(KeyCode::Down) {
+        center.y -= 200. * dt;
+    }
+
+    if is_key_down(KeyCode::Left) {
+        center.x += 200. * dt;
+    }
+
+    if is_key_down(KeyCode::Right) {
+        center.x -= 200. * dt;
     }
 }
